@@ -17,117 +17,123 @@
             overflow-x: hidden;
         }
 
-        /* עיצוב מסלול המרוץ - מותאם לימין לשמאל */
+        /* Race Track Styling */
         .race-track {
             background-color: #ffffff;
-            background-image: linear-gradient(270deg, #f1f5f9 1px, transparent 1px);
+            background-image: linear-gradient(270deg, #e2e8f0 2px, transparent 2px);
             background-size: 20% 100%;
             position: relative;
-            height: 130px;
-            border-radius: 24px;
+            height: 115px;
+            border-radius: 20px;
             border: 2px solid #e2e8f0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem;
             transition: all 0.3s ease;
         }
 
-        /* אנימציה חלקה לתנועת האוואטר - מותאמת ל-right */
+        /* Avatar Animation */
         .avatar-wrapper {
             position: absolute;
-            bottom: 15px;
+            bottom: 10px;
             z-index: 20;
-            transition: right 3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: right 2.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 140px;
+            cursor: pointer;
         }
 
         .avatar-circle {
-            width: 64px;
-            height: 64px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             border: 4px solid white;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 1.8rem;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             position: relative;
+            transition: transform 0.3s ease;
         }
 
+        .avatar-wrapper:hover .avatar-circle {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Goal Bubble on Hover */
         .goal-bubble {
             position: absolute;
-            top: -65px;
-            background: white;
-            color: #1e293b;
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-size: 0.8rem;
+            top: -70px;
+            background: #1e293b;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 14px;
+            font-size: 0.95rem;
             font-weight: 700;
             white-space: nowrap;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-            border: 2px solid #e2e8f0;
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.4);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            max-width: 220px;
-            transition: all 0.5s ease;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            min-width: 160px;
         }
 
-        .goal-completed {
-            border-color: #22c55e;
-            background-color: #f0fdf4;
-            color: #166534;
+        .goal-bubble .bubble-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 4px;
         }
 
-        .check-badge {
-            width: 20px;
-            height: 20px;
-            background: #22c55e;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            flex-shrink: 0;
+        .avatar-wrapper:hover .goal-bubble {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .goal-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid #1e293b;
         }
 
         .team-tag {
-            background: #0f172a;
-            color: white;
+            background: #ffffff;
+            color: #0f172a;
             padding: 3px 14px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 0.9rem;
             font-weight: 800;
-            margin-top: 10px;
+            margin-top: 8px;
             white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid #0f172a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        /* קו הסיום - בצד שמאל */
         .finish-line {
             position: absolute;
             left: 0;
             top: 0;
             bottom: 0;
-            width: 24px;
-            background: repeating-linear-gradient(
-                45deg,
-                #000,
-                #000 10px,
-                #fbbf24 10px,
-                #fbbf24 20px
-            );
+            width: 14px;
+            background: #fbbf24;
+            box-shadow: -4px 0 12px rgba(251, 191, 36, 0.4);
             z-index: 10;
-            opacity: 0.8;
-            border-radius: 20px 0 0 20px;
         }
 
-        /* אינדיקטור LIVE פועם */
         .live-pulse {
             width: 10px;
             height: 10px;
@@ -150,45 +156,45 @@
 <body class="p-4 md:p-8">
 
     <div class="max-w-6xl mx-auto">
-        <!-- כותרת המערכת -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+        <!-- Header Section -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
             <div class="text-center md:text-right">
                 <h1 class="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter mb-1">האקתון פיתוח 🚀</h1>
-                <p class="text-slate-500 text-lg md:text-xl font-semibold italic text-right">מעקב התקדמות דיסציפלינרי בזמן אמת</p>
+                <p class="text-slate-500 text-lg md:text-xl font-semibold italic text-right">מעקב התקדמות - רחפו מעל האוואטר לראות את היעד הבא</p>
             </div>
             
             <div class="flex flex-col items-center md:items-end">
                 <div class="bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-200 flex items-center mb-2">
                     <span class="live-pulse"></span>
-                    <span class="text-sm font-extrabold text-slate-700">עדכון חי כל 5 שניות</span>
+                    <span class="text-sm font-extrabold text-slate-700">סנכרון חי (5 שניות)</span>
                 </div>
                 <div id="sync-time" class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">
-                    מתחבר לנתונים...
+                    טוען נתונים...
                 </div>
             </div>
         </header>
 
-        <!-- לוח המרוץ הדינמי -->
-        <div id="race-container" class="space-y-6">
-            <!-- שורות המרוץ יוזרקו כאן על ידי JavaScript -->
+        <!-- Race Dashboard -->
+        <div id="race-container" class="space-y-4">
+            <!-- Rows injected here -->
         </div>
 
-        <!-- מקרא תחנות בתחתית -->
-        <div class="mt-16 grid grid-cols-6 text-center text-[13px] font-black text-slate-400 uppercase tracking-tighter pt-8 border-t-2 border-slate-200">
-            <div>זינוק</div>
-            <div>תחנה 1</div>
-            <div>תחנה 2</div>
-            <div>תחנה 3</div>
-            <div>תחנה 4</div>
-            <div class="text-blue-600 font-bold scale-110">סיום מוצלח 🏁</div>
+        <!-- Column Headers -->
+        <div class="mt-8 grid grid-cols-6 text-center text-[11px] font-black text-slate-500 uppercase tracking-tighter pt-4 border-t-2 border-slate-200">
+            <div>תחנת מוצא</div>
+            <div>יעד 1</div>
+            <div>יעד 2</div>
+            <div>יעד 3</div>
+            <div>יעד 4</div>
+            <div class="text-blue-600 font-bold scale-110">סיום 🏁</div>
         </div>
     </div>
 
-    <!-- כפתור סנכרון ידני -->
+    <!-- Manual Sync Button -->
     <div class="fixed bottom-6 right-6 z-50">
         <button onclick="forceSync()" class="bg-white hover:bg-slate-50 text-slate-800 p-4 rounded-full shadow-2xl border border-slate-200 transition active:scale-90 flex items-center gap-2 group">
             <svg id="sync-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-180 transition-transform duration-700"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
-            <span class="font-bold text-sm hidden md:inline">סנכרן כעת</span>
+            <span class="font-bold text-sm hidden md:inline">סנכרן עכשיו</span>
         </button>
     </div>
 
@@ -196,17 +202,33 @@
         const SHEET_ID = '1Bp4LQdYHvkofadPq9BKZx3GW_uP32eGHwaEwd1N_nf4';
         const REFRESH_INTERVAL = 5000; 
         
-        // מיפוי אייקונים לדיסציפלינות
+        // Comprehensive Icon Map
         const ICON_MAP = {
-            "תנ\"ך ממלכתי": "📜",
-            "תנ\"ך חמ\"ד": "🕍",
+            "תנ\"ך ממלכתי": "🔯",
+            "תנ\"ך חמ\"ד": "📖",
             "היסטוריה": "🏺",
             "מתמטיקה": "📐",
             "מדעים": "🧪",
             "הומניסטיקה": "🌍",
             "עברית": "🖋️",
             "אנגלית": "🔤",
-            "תושבע": "📚"
+            "תושב\"ע": "📚",
+            "תושבע": "📚",
+            "אזרחות": "⚖️"
+        };
+
+        const TEAM_COLORS = {
+            "תנ\"ך ממלכתי": "#ef4444",
+            "תנ\"ך חמ\"ד": "#3b82f6",
+            "היסטוריה": "#10b981",
+            "מתמטיקה": "#f59e0b",
+            "מדעים": "#8b5cf6",
+            "הומניסטיקה": "#ec4899",
+            "עברית": "#06b6d4",
+            "אנגלית": "#71717a",
+            "תושב\"ע": "#f43f5e",
+            "תושבע": "#f43f5e",
+            "אזרחות": "#4f46e5"
         };
 
         const getSheetUrl = () => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&cachebuster=${Date.now()}`;
@@ -227,10 +249,10 @@
                 const teams = parseCSV(csvContent);
                 
                 renderRace(teams);
-                document.getElementById('sync-time').innerText = `סונכרן לאחרונה: ${new Date().toLocaleTimeString('he-IL')}`;
+                document.getElementById('sync-time').innerText = `עודכן: ${new Date().toLocaleTimeString('he-IL')}`;
             } catch (err) {
                 console.error("Fetch failed:", err);
-                document.getElementById('sync-time').innerText = "שגיאת חיבור לגליון";
+                document.getElementById('sync-time').innerText = "שגיאת תקשורת";
             }
         }
 
@@ -238,16 +260,42 @@
             const rows = text.split('\n').filter(line => line.trim() !== '');
             const parsedTeams = [];
             
-            for (let i = 1; i < rows.length; i++) {
-                const columns = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (columns.length < 2) continue;
+            // Supporting all 10 teams (rows A2-A21)
+            for (let i = 0; i < 11; i++) { // Increased range to capture potential extras
+                const cbRowIdx = i * 2 + 1;
+                const txtRowIdx = i * 2 + 2;
+                
+                if (!rows[cbRowIdx] || !rows[txtRowIdx]) continue;
+
+                const cbCols = rows[cbRowIdx].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                const txtCols = rows[txtRowIdx].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+                const name = cbCols[0].replace(/"/g, '').trim();
+                
+                if (!name || name === "מקצוע" || name === "Name" || name === "") continue;
+
+                // Count checkboxes marked TRUE (B to F, indices 1 to 5)
+                let completedCount = 0;
+                for (let j = 1; j <= 5; j++) {
+                    const val = (cbCols[j] || "").toUpperCase();
+                    if (val.includes('TRUE')) {
+                        completedCount++;
+                    } else {
+                        break; 
+                    }
+                }
+
+                // Objective text from the row below
+                let nextGoal = "כל הכבוד! סיימתם הכל 🏆";
+                if (completedCount < 5) {
+                    nextGoal = (txtCols[completedCount + 1] || "יעד לא הוגדר").replace(/"/g, '').trim();
+                }
 
                 parsedTeams.push({
-                    name: columns[0].replace(/"/g, '').trim(),
-                    station: parseInt(columns[1]) || 1,
-                    color: (columns[2] || "#3b82f6").replace(/"/g, '').trim(),
-                    goalText: (columns[3] || "").replace(/"/g, '').trim(),
-                    isCompleted: (columns[4] || "").toUpperCase().trim() === "TRUE"
+                    name: name,
+                    station: completedCount + 1, 
+                    nextObjective: nextGoal,
+                    color: TEAM_COLORS[name] || "#3b82f6"
                 });
             }
             return parsedTeams;
@@ -257,7 +305,6 @@
             const container = document.getElementById('race-container');
             
             teams.forEach((team, index) => {
-                // שימוש במפתח ייחודי המבוסס על השם והמיקום למניעת כפילויות ושגיאות null
                 let trackId = `track-row-${index}`;
                 let trackElement = document.getElementById(trackId);
                 
@@ -268,7 +315,10 @@
                     trackElement.innerHTML = `
                         <div class="finish-line"></div>
                         <div class="avatar-wrapper" style="right: 0%">
-                            <div class="goal-bubble" style="display: none;"></div>
+                            <div class="goal-bubble">
+                                <span class="bubble-title">היעד הבא להשלמה:</span>
+                                <span class="goal-content"></span>
+                            </div>
                             <div class="avatar-circle"></div>
                             <div class="team-tag"></div>
                         </div>
@@ -276,38 +326,19 @@
                     container.appendChild(trackElement);
                 }
 
-                // מציאת האלמנטים בתוך השורה הספציפית במקום שימוש ב-IDs גלובליים
                 const wrapper = trackElement.querySelector('.avatar-wrapper');
                 const circle = trackElement.querySelector('.avatar-circle');
                 const tag = trackElement.querySelector('.team-tag');
-                const bubble = trackElement.querySelector('.goal-bubble');
+                const bubbleContent = trackElement.querySelector('.goal-content');
 
-                if (wrapper && circle && tag && bubble) {
-                    // חישוב מיקום: תחנה 1 ב-0% (ימין), תחנה 6 ב-92% (שמאל)
+                if (wrapper && circle && tag && bubbleContent) {
                     const percentage = Math.min(Math.max(((team.station - 1) / 5) * 92, 0), 92);
                     
                     wrapper.style.right = `${percentage}%`;
                     circle.style.backgroundColor = team.color;
-                    
-                    // הגדרת אייקון לפי שם הדיסציפלינה
                     circle.innerText = ICON_MAP[team.name] || team.name.charAt(0); 
                     tag.innerText = team.name;
-
-                    // עדכון בועת היעד
-                    if (team.goalText) {
-                        bubble.style.display = 'flex';
-                        bubble.innerHTML = `
-                            ${team.isCompleted ? '<span class="check-badge">✓</span>' : ''}
-                            <span class="truncate">${team.goalText}</span>
-                        `;
-                        if (team.isCompleted) {
-                            bubble.classList.add('goal-completed');
-                        } else {
-                            bubble.classList.remove('goal-completed');
-                        }
-                    } else {
-                        bubble.style.display = 'none';
-                    }
+                    bubbleContent.innerText = team.nextObjective;
                 }
             });
         }
