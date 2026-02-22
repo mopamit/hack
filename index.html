@@ -150,10 +150,31 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
+        #error-overlay {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid #ef4444;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-weight: 700;
+            text-align: center;
+        }
+
         ::-webkit-scrollbar { width: 0; }
     </style>
 </head>
 <body class="p-4 md:p-8">
+
+    <div id="error-overlay">
+        שגיאת חיבור לגיליון. וודא שהגיליון מוגדר כ-"פורסם באינטרנט" בפורמט CSV.
+    </div>
 
     <div class="max-w-6xl mx-auto">
         <!-- Header Section -->
@@ -241,17 +262,24 @@
         }
 
         async function updateDashboard() {
+            const errorOverlay = document.getElementById('error-overlay');
             try {
                 const response = await fetch(getSheetUrl());
                 if (!response.ok) throw new Error('Network error');
                 
                 const csvContent = await response.text();
+                // If response contains HTML instead of CSV, it means not published or sign-in required
+                if (csvContent.includes('<!DOCTYPE html>')) {
+                    throw new Error('Not CSV');
+                }
+
                 const teams = parseCSV(csvContent);
-                
                 renderRace(teams);
+                errorOverlay.style.display = 'none';
                 document.getElementById('sync-time').innerText = `עודכן: ${new Date().toLocaleTimeString('he-IL')}`;
             } catch (err) {
                 console.error("Fetch failed:", err);
+                errorOverlay.style.display = 'block';
                 document.getElementById('sync-time').innerText = "שגיאת תקשורת";
             }
         }
@@ -274,11 +302,6 @@
                 
                 if (!name || name === "מקצוע" || name === "Name" || name === "") continue;
 
-                /**
-                 * לוגיקת התקדמות:
-                 * סופרים כמה צ'קבוקסים הפכו מ-FALSE ל-TRUE (עמודות B עד F).
-                 * ההתקדמות נמדדת לפי רצף ה-TRUE הראשון.
-                 */
                 let completedCount = 0;
                 for (let j = 1; j <= 5; j++) {
                     const val = (cbCols[j] || "").toUpperCase().trim();
@@ -289,10 +312,8 @@
                     }
                 }
 
-                // יעד להשלמה: הטקסט מהשורה שמתחת לצ'קבוקס ה-FALSE הראשון
                 let nextGoal = "כל הכבוד! סיימתם הכל 🏆";
                 if (completedCount < 5) {
-                    // txtCols[completedCount + 1] מחזיר את הטקסט בעמודה של היעד הבא
                     nextGoal = (txtCols[completedCount + 1] || "יעד לא הוגדר").replace(/"/g, '').trim();
                 }
 
