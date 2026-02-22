@@ -261,7 +261,7 @@
             const parsedTeams = [];
             
             // Supporting all 10 teams (rows A2-A21)
-            for (let i = 0; i < 11; i++) { // Increased range to capture potential extras
+            for (let i = 0; i < 11; i++) { 
                 const cbRowIdx = i * 2 + 1;
                 const txtRowIdx = i * 2 + 2;
                 
@@ -274,20 +274,25 @@
                 
                 if (!name || name === "מקצוע" || name === "Name" || name === "") continue;
 
-                // Count checkboxes marked TRUE (B to F, indices 1 to 5)
+                /**
+                 * לוגיקת התקדמות:
+                 * סופרים כמה צ'קבוקסים הפכו מ-FALSE ל-TRUE (עמודות B עד F).
+                 * ההתקדמות נמדדת לפי רצף ה-TRUE הראשון.
+                 */
                 let completedCount = 0;
                 for (let j = 1; j <= 5; j++) {
-                    const val = (cbCols[j] || "").toUpperCase();
-                    if (val.includes('TRUE')) {
+                    const val = (cbCols[j] || "").toUpperCase().trim();
+                    if (val === 'TRUE') {
                         completedCount++;
                     } else {
                         break; 
                     }
                 }
 
-                // Objective text from the row below
+                // יעד להשלמה: הטקסט מהשורה שמתחת לצ'קבוקס ה-FALSE הראשון
                 let nextGoal = "כל הכבוד! סיימתם הכל 🏆";
                 if (completedCount < 5) {
+                    // txtCols[completedCount + 1] מחזיר את הטקסט בעמודה של היעד הבא
                     nextGoal = (txtCols[completedCount + 1] || "יעד לא הוגדר").replace(/"/g, '').trim();
                 }
 
