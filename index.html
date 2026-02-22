@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>האקתון פיתוח - לוח מרוץ חי</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Assistant', sans-serif; 
+            background-color: #f0f4f8;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* עיצוב מסלול המרוץ */
+        .race-track {
+            background-color: #ffffff;
+            background-image: linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 20% 100%; /* מחלק ל-5 מקטעים עבור 6 תחנות */
+            position: relative;
+            height: 100px;
+            border-radius: 20px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        /* אנימציה חלקה לתנועת האוואטר */
+        .avatar-wrapper {
+            position: absolute;
+            bottom: 12px;
+            z-index: 20;
+            transition: left 3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+            transform: translateX(0); /* מניעת קפיצות */
+        }
+
+        .avatar-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.3rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .team-tag {
+            background: #0f172a;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 6px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* קו הסיום בסגנון דגל מרוצים */
+        .finish-line {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 14px;
+            background: repeating-linear-gradient(
+                45deg,
+                #000,
+                #000 8px,
+                #fbbf24 8px,
+                #fbbf24 16px
+            );
+            z-index: 10;
+            opacity: 0.8;
+            border-radius: 0 18px 18px 0;
+        }
+
+        /* אינדיקטור LIVE פועם */
+        .live-pulse {
+            width: 10px;
+            height: 10px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* הסתרת פס גלילה למראה נקי */
+        ::-webkit-scrollbar { width: 0; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- כותרת המערכת -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <div class="text-center md:text-right">
+                <h1 class="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter mb-1">האקתון פיתוח 🚀</h1>
+                <p class="text-slate-500 text-lg md:text-xl font-semibold italic">מעקב התקדמות דיסציפלינרי בזמן אמת</p>
+            </div>
+            
+            <div class="flex flex-col items-center md:items-end">
+                <div class="bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-200 flex items-center mb-2">
+                    <span class="live-pulse"></span>
+                    <span class="text-sm font-extrabold text-slate-700">עדכון חי מהגליון (5s)</span>
+                </div>
+                <div id="sync-time" class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">
+                    מתחבר לנתונים...
+                </div>
+            </div>
+        </header>
+
+        <!-- לוח המרוץ הדינמי -->
+        <div id="race-container" class="space-y-3">
+            <!-- שורות המרוץ יוזרקו כאן על ידי JavaScript -->
+        </div>
+
+        <!-- מקרא תחנות בתחתית -->
+        <div class="mt-12 grid grid-cols-6 text-center text-[11px] font-black text-slate-400 uppercase tracking-tighter pt-6 border-t-2 border-slate-200">
+            <div>זינוק</div>
+            <div>תחנה 1</div>
+            <div>תחנה 2</div>
+            <div>תחנה 3</div>
+            <div>תחנה 4</div>
+            <div class="text-blue-600 font-bold">יעד פיתוח 🏆</div>
+        </div>
+    </div>
+
+    <!-- כפתור סנכרון ידני צף -->
+    <div class="fixed bottom-6 left-6 z-50">
+        <button onclick="forceSync()" class="bg-white hover:bg-slate-50 text-slate-800 p-4 rounded-full shadow-2xl border border-slate-200 transition active:scale-90 flex items-center gap-2 group">
+            <svg id="sync-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-180 transition-transform duration-700"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+            <span class="font-bold text-xs hidden md:inline">סנכרן כעת</span>
+        </button>
+    </div>
+
+    <script>
+        // פרטי הגליון שלך
+        const SHEET_ID = '1gdMDQo8pgCRiy5-kwAXclWwKfjf3EpkOTNNwsyjtLbw';
+        const REFRESH_INTERVAL = 5000; // 5 שניות
+        
+        // פונקציה לייצור URL עם מנגנון מניעת Cache
+        const getSheetUrl = () => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&cachebuster=${Date.now()}`;
+
+        async function forceSync() {
+            const icon = document.getElementById('sync-icon');
+            icon.classList.add('animate-spin');
+            await updateDashboard();
+            setTimeout(() => icon.classList.remove('animate-spin'), 1000);
+        }
+
+        async function updateDashboard() {
+            try {
+                const response = await fetch(getSheetUrl());
+                if (!response.ok) throw new Error('Network error');
+                
+                const csvContent = await response.text();
+                const teams = parseCSV(csvContent);
+                
+                renderRace(teams);
+                document.getElementById('sync-time').innerText = `Last sync: ${new Date().toLocaleTimeString('he-IL')}`;
+            } catch (err) {
+                console.error("Fetch failed:", err);
+                document.getElementById('sync-time').innerText = "Sync Error - Check connection";
+            }
+        }
+
+        function parseCSV(text) {
+            const rows = text.split('\n').filter(line => line.trim() !== '');
+            const parsedTeams = [];
+            
+            // דילוג על שורת הכותרת (0)
+            for (let i = 1; i < rows.length; i++) {
+                // פיצול לפי פסיק תוך התחשבות בגרשיים
+                const columns = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (columns.length < 2) continue;
+
+                parsedTeams.push({
+                    name: columns[0].replace(/"/g, '').trim(),
+                    station: parseInt(columns[1]) || 1,
+                    color: (columns[2] || "#3b82f6").replace(/"/g, '').trim()
+                });
+            }
+            return parsedTeams;
+        }
+
+        function renderRace(teams) {
+            const container = document.getElementById('race-container');
+            
+            teams.forEach((team, index) => {
+                let trackElement = document.getElementById(`track-${index}`);
+                
+                // יצירת המסלול אם הוא לא קיים (טעינה ראשונה)
+                if (!trackElement) {
+                    trackElement = document.createElement('div');
+                    trackElement.id = `track-${index}`;
+                    trackElement.className = 'race-track';
+                    trackElement.innerHTML = `
+                        <div class="finish-line"></div>
+                        <div id="wrapper-${index}" class="avatar-wrapper" style="left: 0%">
+                            <div id="circle-${index}" class="avatar-circle"></div>
+                            <div id="tag-${index}" class="team-tag"></div>
+                        </div>
+                    `;
+                    container.appendChild(trackElement);
+                }
+
+                // עדכון תוכן ומיקום (CSS Transition דואג לאנימציה)
+                const wrapper = document.getElementById(`wrapper-${index}`);
+                const circle = document.getElementById(`circle-${index}`);
+                const tag = document.getElementById(`tag-${index}`);
+
+                // חישוב מיקום: תחנה 1 ב-0%, תחנה 6 ב-92% (כדי שלא ייצא מהמסגרת)
+                const percentage = ((team.station - 1) / 5) * 92;
+                
+                wrapper.style.left = `${percentage}%`;
+                circle.style.backgroundColor = team.color;
+                circle.innerText = team.name.charAt(0); // אות ראשונה
+                tag.innerText = team.name;
+            });
+        }
+
+        // הפעלה ראשונית והגדרת הלולאה הקבועה
+        window.onload = () => {
+            updateDashboard();
+            setInterval(updateDashboard, REFRESH_INTERVAL);
+        };
+    </script>
+</body>
+</html>
