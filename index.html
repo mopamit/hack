@@ -5,76 +5,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>האקתון פיתוח - לוח מרוץ חי</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
         
         body { 
             font-family: 'Assistant', sans-serif; 
-            background-color: #f0f4f8;
+            background-color: #f8fafc;
             color: #1e293b;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
         }
 
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
         /* Race Track Styling */
         .race-track {
             background-color: #ffffff;
-            background-image: linear-gradient(270deg, #e2e8f0 2px, transparent 2px);
-            background-size: 20% 100%;
             position: relative;
-            height: 115px;
-            border-radius: 20px;
+            height: 110px;
+            border-radius: 50px; /* More rounded look */
             border: 2px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+            margin-bottom: 3.5rem;
+            display: flex;
+            /* Remove overflow:hidden to let avatars pop out */
         }
 
-        /* Avatar Animation */
+        /* Progress Bar - Filling from right to left */
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(270deg, #f0fdf4 0%, #dcfce7 100%);
+            border-radius: 50px;
+            z-index: 1;
+            transition: width 2.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-left: 3px solid #22c55e;
+        }
+
+        /* Track Grid Markers */
+        .track-markers {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: row-reverse;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .marker {
+            flex: 1;
+            border-left: 1px dashed #e2e8f0;
+        }
+
+        .marker:last-child { border-left: none; }
+
+        /* Start & Finish Labels */
+        .track-edge {
+            position: absolute;
+            top: -2px;
+            bottom: -2px;
+            width: 45px;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 11px;
+            color: white;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .start-edge {
+            right: -2px;
+            background: linear-gradient(to bottom, #22c55e, #16a34a);
+            border-top-right-radius: 50px;
+            border-bottom-right-radius: 50px;
+        }
+
+        .finish-edge {
+            left: -2px;
+            background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+            border-top-left-radius: 50px;
+            border-bottom-left-radius: 50px;
+            color: #451a03;
+        }
+
+        /* Avatar Styling */
         .avatar-wrapper {
             position: absolute;
-            bottom: 10px;
-            z-index: 20;
+            top: 50%;
+            z-index: 50; /* Above the track */
             transition: right 2.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 140px;
             cursor: pointer;
+            transform: translate(50%, -50%); /* Centered vertically and horizontally relative to station */
         }
 
         .avatar-circle {
-            width: 65px;
-            height: 65px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            border: 4px solid white;
-            box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.2);
+            border: 6px solid white;
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             position: relative;
             transition: transform 0.3s ease;
         }
 
-        .avatar-wrapper:hover .avatar-circle {
-            transform: scale(1.1) rotate(5deg);
+        .winner-glow {
+            animation: glow 1.5s infinite alternate;
         }
 
-        /* Goal Bubble on Hover */
+        @keyframes glow {
+            from { box-shadow: 0 0 15px #fbbf24; }
+            to { box-shadow: 0 0 40px #f59e0b, 0 0 10px #fff; }
+        }
+
+        /* Tooltip / Goal Bubble */
         .goal-bubble {
             position: absolute;
-            top: -70px;
+            top: -85px;
             background: #1e293b;
             color: white;
-            padding: 10px 18px;
-            border-radius: 14px;
-            font-size: 0.95rem;
+            padding: 10px 20px;
+            border-radius: 16px;
+            font-size: 1rem;
             font-weight: 700;
             white-space: nowrap;
-            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -83,14 +158,6 @@
             transform: translateY(10px);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 100;
-            min-width: 160px;
-        }
-
-        .goal-bubble .bubble-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: #94a3b8;
-            margin-bottom: 4px;
         }
 
         .avatar-wrapper:hover .goal-bubble {
@@ -102,7 +169,7 @@
         .goal-bubble::after {
             content: '';
             position: absolute;
-            bottom: -6px;
+            bottom: -8px;
             left: 50%;
             transform: translateX(-50%);
             border-left: 8px solid transparent;
@@ -113,116 +180,71 @@
         .team-tag {
             background: #ffffff;
             color: #0f172a;
-            padding: 3px 14px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 800;
-            margin-top: 8px;
+            padding: 5px 18px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 900;
+            margin-top: 12px;
             white-space: nowrap;
             border: 2px solid #0f172a;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
-        .finish-line {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 14px;
-            background: #fbbf24;
-            box-shadow: -4px 0 12px rgba(251, 191, 36, 0.4);
-            z-index: 10;
-        }
-
-        .live-pulse {
-            width: 10px;
-            height: 10px;
-            background-color: #22c55e;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 8px;
+        .live-status {
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.4; }
+            50% { transform: scale(1.4); opacity: 0.5; }
             100% { transform: scale(1); opacity: 1; }
         }
 
-        #error-overlay {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #fee2e2;
-            color: #b91c1c;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: 1px solid #ef4444;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            font-weight: 700;
-            text-align: center;
-        }
-
-        ::-webkit-scrollbar { width: 0; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body>
 
-    <div id="error-overlay">
-        שגיאת חיבור לגיליון. וודא שהגיליון מוגדר כ-"פורסם באינטרנט" בפורמט CSV.<br>
-        <span id="error-details" class="text-xs font-normal"></span>
-    </div>
-
-    <div class="max-w-6xl mx-auto">
-        <!-- Header Section -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+    <div class="main-container">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-20 gap-8">
             <div class="text-center md:text-right">
-                <h1 class="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter mb-1">האקתון פיתוח 🚀</h1>
-                <p class="text-slate-500 text-lg md:text-xl font-semibold italic text-right">מעקב התקדמות - רחפו מעל האוואטר לראות את היעד הבא</p>
+                <h1 class="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter mb-3">האקתון פיתוח 🚀</h1>
+                <p class="text-slate-500 text-xl md:text-3xl font-semibold italic">מרוץ הדיסציפלינות אל עבר היעדים</p>
             </div>
             
             <div class="flex flex-col items-center md:items-end">
-                <div class="bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-200 flex items-center mb-2">
-                    <span class="live-pulse"></span>
-                    <span class="text-sm font-extrabold text-slate-700">סנכרון חי (5 שניות)</span>
+                <div class="bg-white px-10 py-5 rounded-full shadow-lg border border-slate-100 flex items-center mb-3">
+                    <span class="w-4 h-4 bg-green-500 rounded-full ml-3 live-status"></span>
+                    <span class="text-xl font-black text-slate-700 uppercase tracking-widest">Live Updates</span>
                 </div>
-                <div id="sync-time" class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">
-                    טוען נתונים...
+                <div id="sync-time" class="text-sm text-slate-400 font-mono tracking-widest uppercase">
+                    Connecting to Sheet...
                 </div>
             </div>
         </header>
 
         <!-- Race Dashboard -->
-        <div id="race-container" class="space-y-4">
+        <div id="race-container" class="space-y-12">
             <!-- Rows injected here -->
         </div>
 
-        <!-- Column Headers -->
-        <div class="mt-8 grid grid-cols-6 text-center text-[11px] font-black text-slate-500 uppercase tracking-tighter pt-4 border-t-2 border-slate-200">
-            <div>תחנת מוצא</div>
+        <!-- Progress Labels -->
+        <div class="mt-20 grid grid-cols-6 text-center text-sm font-black text-slate-400 uppercase tracking-widest pt-10 border-t-4 border-slate-200">
+            <div class="text-green-600 scale-110">התחלה 🚩</div>
             <div>יעד 1</div>
             <div>יעד 2</div>
             <div>יעד 3</div>
             <div>יעד 4</div>
-            <div class="text-blue-600 font-bold scale-110">סיום 🏁</div>
+            <div class="text-orange-500 font-bold scale-125">השלמת יעדים 🏁</div>
         </div>
-    </div>
-
-    <!-- Manual Sync Button -->
-    <div class="fixed bottom-6 right-6 z-50">
-        <button onclick="forceSync()" class="bg-white hover:bg-slate-50 text-slate-800 p-4 rounded-full shadow-2xl border border-slate-200 transition active:scale-90 flex items-center gap-2 group">
-            <svg id="sync-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-180 transition-transform duration-700"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
-            <span class="font-bold text-sm hidden md:inline">סנכרן עכשיו</span>
-        </button>
     </div>
 
     <script>
         const SHEET_ID = '1Bp4LQdYHvkofadPq9BKZx3GW_uP32eGHwaEwd1N_nf4';
         const REFRESH_INTERVAL = 5000; 
+        let completedTeams = new Set();
         
         const ICON_MAP = {
             "תנ\"ך ממלכתי": "🔯",
@@ -255,84 +277,69 @@
 
         const getSheetUrl = () => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&cachebuster=${Date.now()}`;
 
-        async function forceSync() {
-            const icon = document.getElementById('sync-icon');
-            icon.classList.add('animate-spin');
-            await updateDashboard();
-            setTimeout(() => icon.classList.remove('animate-spin'), 1000);
-        }
-
         async function updateDashboard() {
-            const errorOverlay = document.getElementById('error-overlay');
-            const errorDetails = document.getElementById('error-details');
             try {
-                const url = getSheetUrl();
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Network response not ok');
-                
+                const response = await fetch(getSheetUrl());
                 const csvContent = await response.text();
-                
-                // בדיקה אם קיבלנו HTML במקום CSV (קורה כשאין הרשאה או לא פורסם)
-                if (csvContent.trim().startsWith('<!DOCTYPE') || csvContent.includes('login')) {
-                    throw new Error('הגיליון אינו מוגדר לפרסום ציבורי (Publish to Web)');
-                }
+                if (csvContent.includes('<!DOCTYPE html>')) throw new Error('Not CSV');
 
                 const teams = parseCSV(csvContent);
                 renderRace(teams);
-                errorOverlay.style.display = 'none';
-                document.getElementById('sync-time').innerText = `עודכן: ${new Date().toLocaleTimeString('he-IL')}`;
+                document.getElementById('sync-time').innerText = `עודכן לאחרונה: ${new Date().toLocaleTimeString('he-IL')}`;
             } catch (err) {
                 console.error("Sync Error:", err);
-                errorOverlay.style.display = 'block';
-                errorDetails.innerText = err.message;
-                document.getElementById('sync-time').innerText = "שגיאת סנכרון";
+                document.getElementById('sync-time').innerText = "Syncing...";
             }
         }
 
         function parseCSV(text) {
-            // ניקוי תווי \r שגורמים לבעיות בהשוואת מחרוזות
             const cleanText = text.replace(/\r/g, "");
             const rows = cleanText.split('\n').filter(line => line.trim() !== '');
             const parsedTeams = [];
             
-            // המבנה: זוגות של שורות. מתחילים משורה 2 בגיליון (אינדקס 1 ב-rows)
+            // Loop for teams starting at row index 3
             for (let i = 0; i < 11; i++) { 
-                const cbRowIdx = i * 2 + 1; // שורת צ'קבוקסים
-                const txtRowIdx = i * 2 + 2; // שורת טקסטים
+                const cbRowIdx = i * 2 + 3; 
+                const txtRowIdx = cbRowIdx + 1; 
                 
-                if (!rows[cbRowIdx] || !rows[txtRowIdx]) continue;
+                if (!rows[cbRowIdx]) continue;
 
                 const cbCols = rows[cbRowIdx].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                const txtCols = rows[txtRowIdx].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-
                 const name = cbCols[0].replace(/"/g, '').trim();
                 
-                if (!name || name === "מקצוע" || name === "Name" || name === "") continue;
+                if (!name || name === "מקצוע" || name === "") continue;
 
-                // בדיקת צ'קבוקסים
-                let completedCount = 0;
-                for (let j = 1; j <= 5; j++) {
+                let lastTrueIndex = 0; 
+                for (let j = 2; j <= 6; j++) {
                     const val = (cbCols[j] || "").toUpperCase().trim();
                     if (val === 'TRUE' || val === '"TRUE"') {
-                        completedCount++;
-                    } else {
-                        break; 
+                        lastTrueIndex = j - 1; 
                     }
                 }
 
-                let nextGoal = "כל הכבוד! סיימתם הכל 🏆";
-                if (completedCount < 5) {
-                    nextGoal = (txtCols[completedCount + 1] || "יעד לא הוגדר").replace(/"/g, '').trim();
+                let nextGoal = "היעד הושלם! 🏆";
+                if (lastTrueIndex < 5 && rows[txtRowIdx]) {
+                    const txtCols = rows[txtRowIdx].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    nextGoal = (txtCols[lastTrueIndex + 2] || "יעד לא הוגדר").replace(/"/g, '').trim();
                 }
 
                 parsedTeams.push({
                     name: name,
-                    station: completedCount + 1, 
+                    station: lastTrueIndex + 1, 
                     nextObjective: nextGoal,
                     color: TEAM_COLORS[name] || "#3b82f6"
                 });
             }
             return parsedTeams;
+        }
+
+        function triggerFireworks() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#fbbf24', '#22c55e', '#3b82f6', '#ef4444']
+            });
         }
 
         function renderRace(teams) {
@@ -347,10 +354,19 @@
                     trackElement.id = trackId;
                     trackElement.className = 'race-track';
                     trackElement.innerHTML = `
-                        <div class="finish-line"></div>
-                        <div class="avatar-wrapper" style="right: 0%">
+                        <div class="track-edge start-edge">התחלה</div>
+                        <div class="track-edge finish-edge">השלמת יעדים</div>
+                        <div class="track-markers">
+                            <div class="marker"></div>
+                            <div class="marker"></div>
+                            <div class="marker"></div>
+                            <div class="marker"></div>
+                            <div class="marker"></div>
+                        </div>
+                        <div class="progress-fill" style="width: 0%"></div>
+                        <div class="avatar-wrapper">
                             <div class="goal-bubble">
-                                <span class="bubble-title">היעד הבא להשלמה:</span>
+                                <span class="bubble-title">היעד הבא:</span>
                                 <span class="goal-content"></span>
                             </div>
                             <div class="avatar-circle"></div>
@@ -364,15 +380,30 @@
                 const circle = trackElement.querySelector('.avatar-circle');
                 const tag = trackElement.querySelector('.team-tag');
                 const bubbleContent = trackElement.querySelector('.goal-content');
+                const progressFill = trackElement.querySelector('.progress-fill');
 
                 if (wrapper && circle && tag && bubbleContent) {
-                    const percentage = Math.min(Math.max(((team.station - 1) / 5) * 92, 0), 92);
+                    const percentage = (team.station - 1) * 20;
                     
+                    // Update Position and Fill
                     wrapper.style.right = `${percentage}%`;
+                    progressFill.style.width = `${percentage}%`;
+                    
                     circle.style.backgroundColor = team.color;
                     circle.innerText = ICON_MAP[team.name] || team.name.charAt(0); 
                     tag.innerText = team.name;
                     bubbleContent.innerText = team.nextObjective;
+
+                    // Success handling
+                    if (team.station === 6) {
+                        circle.classList.add('winner-glow');
+                        if (!completedTeams.has(team.name)) {
+                            completedTeams.add(team.name);
+                            triggerFireworks();
+                        }
+                    } else {
+                        circle.classList.remove('winner-glow');
+                    }
                 }
             });
         }
